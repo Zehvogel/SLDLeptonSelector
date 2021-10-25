@@ -1,3 +1,6 @@
 {
-    "cmake.cacheInit": ["/cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-02/ILCSoft.cmake"]
+    "cmake.cacheInit": [
+        "/cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-02/ILCSoft.cmake"
+    ],
+    "cmake.configureOnOpen": true
 }
