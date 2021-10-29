@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="us-ascii" ?>
+<!-- ?xml-stylesheet type="text/xsl" href="http://ilcsoft.desy.de/marlin/marlin.xsl"? -->
+<!-- ?xml-stylesheet type="text/xsl" href="marlin.xsl"? -->
+
+<marlin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ilcsoft.desy.de/marlin/marlin.xsd">
+	<constants>
+		<constant name="ilcsoft_DIR" value="/afs/desy.de/project/ilcsoft/sw/" />
+		<constant name="arch" value="x86_64_ub1804" />
+		<constant name="release" value="v02-02-02" />
+		<constant name="lcgeo_DIR" value="${ilcsoft_DIR}/${arch}/${release}/lcgeo/v00-16-06" />
+		<constant name="DetectorModel" value="ILD_l5_o1_v02" />
+		<constant name="CompactFile" value="${lcgeo_DIR}/ILD/compact/${DetectorModel}/${DetectorModel}.xml" />
+		<constant name="OutputDirectory" value="/afs/desy.de/group/flc/pool/reichenl/marlin_test/output" />
+		<constant name="createRootTree" value="true" />
+		<constant name="AllowToModifyEvent" value="true" />
+		<constant name="displayEvent" value="false" />
+		<constant name="OutputBaseName" value="SLDLeptonSelectorTest" />
+		<constant name="OutputRootFile" value="${OutputBaseName}.root" />
+		<constant name="Verbosity" value="DEBUG"/>
+	</constants>
+
+	<execute>
+		<processor name="MySLDLeptonSelectorProcessor"/>
+		<processor name="MyLCIOOutputProcessor"/>
+	</execute>
+
+	<global>
+		<parameter name="LCIOInputFiles">/afs/desy.de/group/flc/pool/reichenl/marlin_test/output/ZHDecayMode.slcio</parameter>
+		<!-- limit the number of processed records (run+evt): -->
+		<parameter name="MaxRecordNumber" value="1000" />
+		<parameter name="SkipNEvents" value="0" />
+		<parameter name="SupressCheck" value="false" />
+		<parameter name="GearXMLFile">${ilcsoft_DIR}/ILDConfig/v02-02-02/StandardConfig/production/Gear/gear_ILD_l5_v02.xml</parameter>
+		<parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT">MESSAGE</parameter>
+		<parameter name="RandomSeed" value="1234567890" />
+		<parameter name="OutputSteeringFile" value="" />
+		<!-- optionally limit the collections that are read from the input file: -->
+		<!--parameter name="LCIOReadCollectionNames">MCParticle PandoraPFOs</parameter-->
+	</global>
+
+	<processor name="MySLDLeptonSelectorProcessor" type="SLDLeptonSelector">
+		<parameter name="Verbosity" type="string">DEBUG</parameter>
+	</processor>
+
+	<processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
+		<!--Writes the current event to the specified LCIO outputfile. Needs to be the last ActiveProcessor.-->
+		<!--drops the named collections from the event-->
+		<!--parameter name="DropCollectionNames" type="StringVec">TPCHits HCalHits  </parameter-->
+		<!--drops all collections of the given type from the event-->
+		<!--parameter name="DropCollectionTypes" type="StringVec">SimTrackerHit SimCalorimeterHit  </parameter-->
+		<!-- write complete objects in subset collections to the file (i.e. ignore subset flag)-->
+		<!--parameter name="FullSubsetCollections" type="StringVec">MCParticlesSkimmed  </parameter-->
+		<!--force keep of the named collections - overrules DropCollectionTypes (and DropCollectionNames)-->
+		<!--parameter name="KeepCollectionNames" type="StringVec">MyPreciousSimTrackerHits  </parameter-->
+		<!-- name of output file -->
+		<parameter name="LCIOOutputFile" type="string">${OutputDirectory}/${OutputBaseName}.slcio</parameter>
+		<!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
+		<parameter name="LCIOWriteMode" type="string">WRITE_NEW</parameter>
+		<!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->
+		<!--parameter name="SplitFileSizekB" type="int">1992294 </parameter-->
+		<!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+		<!-- <parameter name="Verbosity" type="string">DEBUG</parameter> -->
+	</processor>
+</marlin>

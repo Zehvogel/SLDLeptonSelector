@@ -5,10 +5,8 @@
 #include "lcio.h"
 #include <string>
 
-
-using namespace lcio ;
-using namespace marlin ;
-
+using namespace lcio;
+using namespace marlin;
 
 /**  Example processor for marlin.
  * 
@@ -27,48 +25,43 @@ using namespace marlin ;
  * @version $Id: SLDLeptonSelector.h,v 1.4 2005-10-11 12:57:39 gaede Exp $ 
  */
 
-class SLDLeptonSelector : public Processor {
-  
- public:
-  
-  virtual Processor*  newProcessor() { return new SLDLeptonSelector ; }
-  
-  
-  SLDLeptonSelector() ;
-  
+class SLDLeptonSelector : public Processor
+{
+
+public:
+  virtual Processor *newProcessor() { return new SLDLeptonSelector; }
+
+  SLDLeptonSelector();
+
   /** Called at the begin of the job before anything is read.
    * Use to initialize the processor, e.g. book histograms.
    */
-  virtual void init() ;
-  
+  virtual void init();
+
   /** Called for every run.
    */
-  virtual void processRunHeader( LCRunHeader* run ) ;
-  
+  virtual void processRunHeader(LCRunHeader *run);
+
   /** Called for every event - the working horse.
    */
-  virtual void processEvent( LCEvent * evt ) ; 
-  
-  
-  virtual void check( LCEvent * evt ) ; 
-  
-  
+  virtual void processEvent(LCEvent *evt);
+
+  virtual void check(LCEvent *evt);
+
   /** Called after data processing for clean up.
    */
-  virtual void end() ;
-  
-  
- protected:
+  virtual void end();
 
+protected:
   /** Input collection name.
    */
-  std::string _colName{} ;
+  std::string _mcInColName{};
+  std::string _relInColName{};
+  std::string _pfoInColName{};
 
-  int _nRun{} ;
-  int _nEvt{} ;
-} ;
+  std::string _mcOutColName{};
+  
+  bool isBOrCHadron(int pdg);  
+};
 
 #endif
-
-
-

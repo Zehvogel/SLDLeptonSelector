@@ -1,6 +1,10 @@
 {
     "cmake.cacheInit": [
-        "/cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-02/ILCSoft.cmake"
+        //"/cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-02/ILCSoft.cmake"
+        "/afs/desy.de/project/ilcsoft/sw/x86_64_gcc82_centos7/v02-02-02/ILCSoft.cmake"
     ],
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "cmake.configureSettings": {
+       "MARLINDEBUG": 1 
+    }
 }
