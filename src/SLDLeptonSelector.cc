@@ -42,12 +42,12 @@ SLDLeptonSelector::SLDLeptonSelector() : Processor("SLDLeptonSelector")
                             "Name of the MCTruthRecoLink collection",
                             _relInColName,
                             std::string("MCTruthRecoLink"));
-    
+
     registerOutputCollection(LCIO::MCPARTICLE,
-                            "MCSLDLeptonsOutColName",
-                            "Name of the MCParticle output collection",
-                            _mcOutColName,
-                            std::string("MCSLDLeptons"));
+                             "MCSLDLeptonsOutColName",
+                             "Name of the MCParticle output collection",
+                             _mcOutColName,
+                             std::string("MCSLDLeptons"));
 }
 
 void SLDLeptonSelector::init()
@@ -62,7 +62,6 @@ void SLDLeptonSelector::processRunHeader(LCRunHeader *run)
 
 void SLDLeptonSelector::processEvent(LCEvent *evt)
 {
-    //auto particles = dynamic_cast<LCCollectionVec *>(evt->getCollection(_mcInColName));
     LCCollection *particles = evt->getCollection(_mcInColName);
     if (particles == NULL)
         return;
@@ -75,8 +74,7 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
 
     int nMCP = particles->getNumberOfElements();
     // TODO: find a less ugly alternative
-    for (int i = 0; i < nMCP; i++)
-    {
+    for (int i = 0; i < nMCP; i++) {
         MCParticle *p = dynamic_cast<MCParticle *>(particles->getElementAt(i));
         // check if particle decayed
         if (p->getGeneratorStatus() != 2)
@@ -92,20 +90,25 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
         auto daughters = p->getDaughters();
         EVENT::MCParticleVec stableLeptons{};
         std::vector<int> stableNeutrinoPDGs{};
-        for (const auto& d: daughters) {
+        for (const auto &d : daughters)
+        {
             if (d->getGeneratorStatus() != 1)
                 continue;
-            
+
             int d_pdg = abs(d->getPDG());
             if (d_pdg == 11 || d_pdg == 13)
                 stableLeptons.push_back(d);
             else if (d_pdg == 12 || d_pdg == 14)
                 stableNeutrinoPDGs.push_back(d->getPDG());
-        } 
-        
-        for (const auto& l: stableLeptons) {
-            for (const int j: stableNeutrinoPDGs) {
-                if (abs(j == l->getPDG())) {
+        }
+
+        for (const auto &l : stableLeptons)
+        {
+            for (const int j : stableNeutrinoPDGs)
+            {
+                // streamlog_out(DEBUG) << "[" << j << ", " << l->getPDG() << "]" << std::endl;
+                if (abs(j + l->getPDG()) == 1)
+                {
                     mcOutCol->addElement(l);
                     break;
                 }
@@ -115,10 +118,11 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
     evt->addCollection(mcOutCol, _mcOutColName);
 }
 
-bool SLDLeptonSelector::isBOrCHadron(int pdg) {
+bool SLDLeptonSelector::isBOrCHadron(int pdg)
+{
     bool isCHadron = pdg / 100 == 4 || pdg / 1000 == 4;
     bool isBHadron = pdg / 100 == 5 || pdg / 1000 == 5;
-    
+
     return isBHadron || isCHadron;
 }
 
