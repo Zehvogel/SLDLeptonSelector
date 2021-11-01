@@ -60,6 +60,8 @@ protected:
   std::string _pfoInColName{};
 
   std::string _mcOutColName{};
+  std::string _relOutColName{};
+  std::string _pfoOutColName{};
   
   bool isBOrCHadron(int pdg);  
 };

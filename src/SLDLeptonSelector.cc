@@ -3,8 +3,10 @@
 
 #include <EVENT/LCCollection.h>
 #include <EVENT/MCParticle.h>
+#include <EVENT/ReconstructedParticle.h>
 #include <UTIL/LCRelationNavigator.h>
 #include <IMPL/LCCollectionVec.h>
+#include <IMPL/LCRelationImpl.h>
 
 // ----- include for verbosity dependend logging ---------
 #include "marlin/VerbosityLevels.h"
@@ -48,11 +50,25 @@ SLDLeptonSelector::SLDLeptonSelector() : Processor("SLDLeptonSelector")
                              "Name of the MCParticle output collection",
                              _mcOutColName,
                              std::string("MCSLDLeptons"));
+    
+    registerOutputCollection(LCIO::RECONSTRUCTEDPARTICLE,
+                            "PFOOutColName",
+                            "Name of the PFO output collection",
+                            _pfoOutColName,
+                            std::string("SLDLeptonsPFOs"));
+
+    registerInputCollection(LCIO::LCRELATION,
+                            "SLDLinkColName",
+                            "Name of the SLD link output collection",
+                            _relOutColName,
+                            std::string("SLDMCRecoLink"));
+
 }
 
 void SLDLeptonSelector::init()
 {
     streamlog_out(DEBUG) << "init called" << std::endl;
+    // TODO: open output file
 }
 
 void SLDLeptonSelector::processRunHeader(LCRunHeader *run)
@@ -63,17 +79,19 @@ void SLDLeptonSelector::processRunHeader(LCRunHeader *run)
 void SLDLeptonSelector::processEvent(LCEvent *evt)
 {
     LCCollection *particles = evt->getCollection(_mcInColName);
-    if (particles == NULL)
+    // doesn't work :sad:
+    //auto particles = dynamic_cast<MCParticleVec *>(evt->getCollection(_mcInColName));
+    if (particles == NULL) {
+        streamlog_out(DEBUG) << "particles == NULL" << std::endl;
         return;
-    LCCollection *MCTruthRecoLink = evt->getCollection(_relInColName);
+    }
 
     auto mcOutCol = new LCCollectionVec(LCIO::MCPARTICLE);
     mcOutCol->setSubset();
 
-    auto nav = std::make_unique<LCRelationNavigator>(MCTruthRecoLink);
-
     int nMCP = particles->getNumberOfElements();
     // TODO: find a less ugly alternative
+    //for (const auto& p: *particles) {
     for (int i = 0; i < nMCP; i++) {
         MCParticle *p = dynamic_cast<MCParticle *>(particles->getElementAt(i));
         // check if particle decayed
@@ -85,10 +103,9 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
         if (!isBOrCHadron(pdg))
             continue;
 
-        // at least this thing returns a vector for once :)
         // get all stable daughter particles
         auto daughters = p->getDaughters();
-        EVENT::MCParticleVec stableLeptons{};
+        MCParticleVec stableLeptons{};
         std::vector<int> stableNeutrinoPDGs{};
         for (const auto &d : daughters)
         {
@@ -115,7 +132,45 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
             }
         }
     }
+    if (mcOutCol->getNumberOfElements() < 1)
+        return;
+    
+    LCCollection *MCTruthRecoLink = evt->getCollection(_relInColName);
+    auto nav = std::make_unique<LCRelationNavigator>(MCTruthRecoLink);
+
+    auto recoOutCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
+    recoOutCol->setSubset();
+    
+    auto linkOutCol = new LCCollectionVec(LCIO::LCRELATION);
+
+    for (const auto o: *mcOutCol) {
+        auto mcp = dynamic_cast<MCParticle *>(o);
+        auto recos = nav->getRelatedToObjects(mcp);
+        auto weights = nav->getRelatedToWeights(mcp);
+        size_t highest = 0;
+        for (size_t i = 0; i < recos.size(); i++) {
+            auto tweight = int(weights[i]) % 10000;
+            if (tweight > 5000) {
+                highest = i;
+                break;
+            } else if (tweight > int(weights[highest]) % 10000) {
+                highest = i;
+            }
+        }
+        ReconstructedParticle *reco = NULL;
+        if (recos.size() > 0) {
+            reco = dynamic_cast<ReconstructedParticle *>(recos[highest]);
+            recoOutCol->addElement(reco);
+        }
+        // streamlog_out(DEBUG) << "reco: " << reco << std::endl;
+        auto rel = new LCRelationImpl(mcp, reco);
+        linkOutCol->addElement(rel);
+    }
+
     evt->addCollection(mcOutCol, _mcOutColName);
+    evt->addCollection(recoOutCol, _pfoOutColName);
+    evt->addCollection(linkOutCol, _relOutColName);
+    // TODO: write event to output
 }
 
 bool SLDLeptonSelector::isBOrCHadron(int pdg)
@@ -133,8 +188,5 @@ void SLDLeptonSelector::check(LCEvent *evt)
 
 void SLDLeptonSelector::end()
 {
-
-    //   std::cout << "SLDLeptonSelector::end()  " << name()
-    // 	    << " processed " << _nEvt << " events in " << _nRun << " runs "
-    // 	    << std::endl ;
+    // TODO: close output file
 }
