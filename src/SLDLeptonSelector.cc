@@ -63,12 +63,17 @@ SLDLeptonSelector::SLDLeptonSelector() : Processor("SLDLeptonSelector")
                             _relOutColName,
                             std::string("SLDMCRecoLink"));
 
+    registerProcessorParameter("OutputFileName",
+                                "Name of the LCIO output file",
+                                _outFileName,
+                                std::string("test_out.slcio"));
 }
 
 void SLDLeptonSelector::init()
 {
     streamlog_out(DEBUG) << "init called" << std::endl;
-    // TODO: open output file
+    _lcWriter = LCFactory::getInstance()->createLCWriter();
+    _lcWriter->open(_outFileName);
 }
 
 void SLDLeptonSelector::processRunHeader(LCRunHeader *run)
@@ -171,6 +176,7 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
     evt->addCollection(recoOutCol, _pfoOutColName);
     evt->addCollection(linkOutCol, _relOutColName);
     // TODO: write event to output
+    _lcWriter->writeEvent(evt);
 }
 
 bool SLDLeptonSelector::isBOrCHadron(int pdg)
@@ -188,5 +194,6 @@ void SLDLeptonSelector::check(LCEvent *evt)
 
 void SLDLeptonSelector::end()
 {
-    // TODO: close output file
+    _lcWriter->close();
+    delete _lcWriter;
 }

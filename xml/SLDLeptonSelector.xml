@@ -21,7 +21,7 @@
 
 	<execute>
 		<processor name="MySLDLeptonSelectorProcessor"/>
-		<processor name="MyLCIOOutputProcessor"/>
+		<!-- <processor name="MyLCIOOutputProcessor"/> -->
 	</execute>
 
 	<global>

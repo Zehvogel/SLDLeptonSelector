@@ -5,6 +5,8 @@
 #include "lcio.h"
 #include <string>
 
+#include <IO/LCWriter.h>
+
 using namespace lcio;
 using namespace marlin;
 
@@ -62,6 +64,9 @@ protected:
   std::string _mcOutColName{};
   std::string _relOutColName{};
   std::string _pfoOutColName{};
+
+  std::string _outFileName{};
+  LCWriter *_lcWriter;
   
   bool isBOrCHadron(int pdg);  
 };
