@@ -73,7 +73,7 @@ void SLDLeptonSelector::init()
 {
     streamlog_out(DEBUG) << "init called" << std::endl;
     _lcWriter = LCFactory::getInstance()->createLCWriter();
-    _lcWriter->open(_outFileName);
+    _lcWriter->open(_outFileName, LCIO::WRITE_NEW);
 }
 
 void SLDLeptonSelector::processRunHeader(LCRunHeader *run)
@@ -105,7 +105,7 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
 
         // check if particle is of interest i.e. b or c hadron
         int pdg = p->getPDG();
-        if (!isBOrCHadron(pdg))
+        if (!isBOrCHadron(abs(pdg)))
             continue;
 
         // get all stable daughter particles
@@ -166,6 +166,7 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
         if (recos.size() > 0) {
             reco = dynamic_cast<ReconstructedParticle *>(recos[highest]);
             recoOutCol->addElement(reco);
+            streamlog_out(DEBUG) << "[mc, rec]: [" << mcp->getPDG() << ", " << reco->getType() << "]" << std::endl;
         }
         // streamlog_out(DEBUG) << "reco: " << reco << std::endl;
         auto rel = new LCRelationImpl(mcp, reco);
