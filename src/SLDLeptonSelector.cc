@@ -166,7 +166,7 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
         if (recos.size() > 0) {
             reco = dynamic_cast<ReconstructedParticle *>(recos[highest]);
             recoOutCol->addElement(reco);
-            streamlog_out(DEBUG) << "[mc, rec]: [" << mcp->getPDG() << ", " << reco->getType() << "]" << std::endl;
+            //streamlog_out(DEBUG) << "[mc, rec]: [" << mcp->getPDG() << ", " << reco->getType() << "]" << std::endl;
         }
         // streamlog_out(DEBUG) << "reco: " << reco << std::endl;
         auto rel = new LCRelationImpl(mcp, reco);
