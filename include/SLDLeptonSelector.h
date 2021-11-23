@@ -11,20 +11,20 @@ using namespace lcio;
 using namespace marlin;
 
 /**  Example processor for marlin.
- * 
- *  If compiled with MARLIN_USE_AIDA 
+ *
+ *  If compiled with MARLIN_USE_AIDA
  *  it creates a histogram (cloud) of the MCParticle energies.
- * 
+ *
  *  <h4>Input - Prerequisites</h4>
  *  Needs the collection of MCParticles.
  *
- *  <h4>Output</h4> 
+ *  <h4>Output</h4>
  *  A histogram.
- * 
+ *
  * @param CollectionName Name of the MCParticle collection
- * 
+ *
  * @author F. Gaede, DESY
- * @version $Id: SLDLeptonSelector.h,v 1.4 2005-10-11 12:57:39 gaede Exp $ 
+ * @version $Id: SLDLeptonSelector.h,v 1.4 2005-10-11 12:57:39 gaede Exp $
  */
 
 class SLDLeptonSelector : public Processor
@@ -65,10 +65,11 @@ protected:
   std::string _relOutColName{};
   std::string _pfoOutColName{};
 
+  bool _handleOutput;
   std::string _outFileName{};
-  LCWriter *_lcWriter;
-  
-  bool isBOrCHadron(int pdg);  
+  LCWriter *_lcWriter = nullptr;
+
+  bool isBOrCHadron(int pdg);
 };
 
 #endif

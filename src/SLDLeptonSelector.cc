@@ -50,7 +50,7 @@ SLDLeptonSelector::SLDLeptonSelector() : Processor("SLDLeptonSelector")
                              "Name of the MCParticle output collection",
                              _mcOutColName,
                              std::string("MCSLDLeptons"));
-    
+
     registerOutputCollection(LCIO::RECONSTRUCTEDPARTICLE,
                             "PFOOutColName",
                             "Name of the PFO output collection",
@@ -67,13 +67,20 @@ SLDLeptonSelector::SLDLeptonSelector() : Processor("SLDLeptonSelector")
                                 "Name of the LCIO output file",
                                 _outFileName,
                                 std::string("test_out.slcio"));
+
+    registerProcessorParameter("HandleOutput",
+                                "Determines if the processor writes its own slcio outfile.",
+                                _handleOutput,
+                                true);
 }
 
 void SLDLeptonSelector::init()
 {
     streamlog_out(DEBUG) << "init called" << std::endl;
-    _lcWriter = LCFactory::getInstance()->createLCWriter();
-    _lcWriter->open(_outFileName, LCIO::WRITE_NEW);
+    if (_handleOutput) {
+        _lcWriter = LCFactory::getInstance()->createLCWriter();
+        _lcWriter->open(_outFileName, LCIO::WRITE_NEW);
+    }
 }
 
 void SLDLeptonSelector::processRunHeader(LCRunHeader *run)
@@ -139,13 +146,13 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
     }
     if (mcOutCol->getNumberOfElements() < 1)
         return;
-    
+
     LCCollection *MCTruthRecoLink = evt->getCollection(_relInColName);
     auto nav = std::make_unique<LCRelationNavigator>(MCTruthRecoLink);
 
     auto recoOutCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
     recoOutCol->setSubset();
-    
+
     auto linkOutCol = new LCCollectionVec(LCIO::LCRELATION);
 
     for (const auto o: *mcOutCol) {
@@ -176,8 +183,10 @@ void SLDLeptonSelector::processEvent(LCEvent *evt)
     evt->addCollection(mcOutCol, _mcOutColName);
     evt->addCollection(recoOutCol, _pfoOutColName);
     evt->addCollection(linkOutCol, _relOutColName);
-    // TODO: write event to output
-    _lcWriter->writeEvent(evt);
+
+    if (_handleOutput) {
+        _lcWriter->writeEvent(evt);
+    }
 }
 
 bool SLDLeptonSelector::isBOrCHadron(int pdg)
@@ -195,6 +204,8 @@ void SLDLeptonSelector::check(LCEvent *evt)
 
 void SLDLeptonSelector::end()
 {
-    _lcWriter->close();
-    delete _lcWriter;
+    if (_handleOutput) {
+        _lcWriter->close();
+        delete _lcWriter;
+    }
 }
