@@ -57,7 +57,7 @@ SLDLeptonSelector::SLDLeptonSelector() : Processor("SLDLeptonSelector")
                             _pfoOutColName,
                             std::string("SLDLeptonsPFOs"));
 
-    registerInputCollection(LCIO::LCRELATION,
+    registerOutputCollection(LCIO::LCRELATION,
                             "SLDLinkColName",
                             "Name of the SLD link output collection",
                             _relOutColName,
